@@ -42,7 +42,7 @@ public interface VetRepository extends Repository<Vet, Integer> {
 	 * @return a <code>Collection</code> of <code>Vet</code>s
 	 */
 	@Transactional(readOnly = true)
-	@Cacheable("vets")
+	@Cacheable(cacheNames = "vets", key = "#root.methodName")
 	Collection<Vet> findAll() throws DataAccessException;
 
 	/**
@@ -52,7 +52,7 @@ public interface VetRepository extends Repository<Vet, Integer> {
 	 * @throws DataAccessException
 	 */
 	@Transactional(readOnly = true)
-	@Cacheable("vets")
+	@Cacheable(cacheNames = "vets", key = "#root.methodName")
 	Page<Vet> findAll(Pageable pageable) throws DataAccessException;
 
 }
