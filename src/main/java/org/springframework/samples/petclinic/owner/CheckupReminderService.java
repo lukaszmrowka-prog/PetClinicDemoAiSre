@@ -16,10 +16,12 @@
 package org.springframework.samples.petclinic.owner;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Sends a pet's owner a text reminding them that the pet is due for its annual check-up.
+ * <p>
+ * Not transactional on purpose: the owner is loaded in the repository's own short
+ * transaction, so no database connection is held while the SMS provider responds.
  */
 @Service
 public class CheckupReminderService {
@@ -33,7 +35,6 @@ public class CheckupReminderService {
 		this.smsGateway = smsGateway;
 	}
 
-	@Transactional(readOnly = true)
 	public void remind(int ownerId, int petId) {
 		Owner owner = this.owners.findById(ownerId)
 			.orElseThrow(() -> new IllegalArgumentException("Owner not found with id: " + ownerId));

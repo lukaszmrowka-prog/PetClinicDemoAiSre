@@ -42,9 +42,10 @@ class CheckupReminderJob {
 
 	/**
 	 * Each text takes a few seconds to be accepted by the provider, so reminders are sent
-	 * in parallel to finish a batch in seconds rather than minutes.
+	 * in parallel. Kept well below the database pool size (10) so a batch can never take
+	 * every connection.
 	 */
-	private static final int SENDER_THREADS = 16;
+	private static final int SENDER_THREADS = 4;
 
 	private final OwnerRepository owners;
 
