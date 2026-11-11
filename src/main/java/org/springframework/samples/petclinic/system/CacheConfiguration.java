@@ -34,7 +34,12 @@ class CacheConfiguration {
 
 	@Bean
 	public JCacheManagerCustomizer petclinicCacheConfigurationCustomizer() {
-		return cm -> cm.createCache("vets", cacheConfiguration());
+		return cm -> {
+			cm.createCache("vets", cacheConfiguration());
+			// Owner searches: the find-owners form asks for suggestions on every
+			// keystroke.
+			cm.createCache("owners", cacheConfiguration());
+		};
 	}
 
 	/**

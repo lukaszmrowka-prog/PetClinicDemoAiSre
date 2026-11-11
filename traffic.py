@@ -1,8 +1,8 @@
 """Mixed browsing traffic for the PetClinic demo.
 
-Simulates a few users clicking around the clinic: finding owners, opening owner
-pages, starting a visit booking and looking at the vets. Uses only the standard
-library.
+Simulates a few users clicking around the clinic: finding owners (including the
+suggestions shown while typing a last name), opening owner pages, starting a
+visit booking and looking at the vets. Uses only the standard library.
 
     BASE_URL=http://localhost:8080 WORKERS=4 python3 traffic.py
 
@@ -26,6 +26,7 @@ LAST_NAMES = ["", "Davis", "Franklin", "Black", "Estaban", "Coleman", "McTavish"
 PAGES = [
     (10, lambda: "/"),
     (15, lambda: "/owners?lastName=" + random.choice(LAST_NAMES)),
+    (10, lambda: "/owners/suggestions?lastName=" + random.choice(LAST_NAMES)),
     (25, lambda: "/owners/%d" % random.randint(1, 10)),
     (5, lambda: "/owners/find"),
     (10, lambda: "/owners/%d/pets/%d/visits/new" % random.choice(PETS)),
@@ -34,10 +35,12 @@ PAGES = [
     (15, lambda: "/vets"),
 ]
 WEIGHTS = [weight for weight, _ in PAGES]
+JSON_PATHS = ("/vets", "/owners/suggestions")
 
 
 def fetch(path):
-    request = urllib.request.Request(BASE_URL + path, headers={"Accept": "application/json"} if path == "/vets" else {})
+    json_request = path.split("?", 1)[0] in JSON_PATHS
+    request = urllib.request.Request(BASE_URL + path, headers={"Accept": "application/json"} if json_request else {})
     started = time.monotonic()
     try:
         with urllib.request.urlopen(request, timeout=30) as response:

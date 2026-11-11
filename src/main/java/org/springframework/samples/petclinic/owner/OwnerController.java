@@ -39,6 +39,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import jakarta.validation.Valid;
@@ -58,6 +59,8 @@ import tools.jackson.databind.ObjectMapper;
 class OwnerController {
 
 	private static final String VIEWS_OWNER_CREATE_OR_UPDATE_FORM = "owners/createOrUpdateOwnerForm";
+
+	private static final int MAX_SUGGESTIONS = 10;
 
 	private static final Logger log = LoggerFactory.getLogger(OwnerController.class);
 
@@ -148,6 +151,28 @@ class OwnerController {
 		int pageSize = 5;
 		Pageable pageable = PageRequest.of(page - 1, pageSize);
 		return owners.findByLastNameStartingWith(lastname, pageable);
+	}
+
+	/**
+	 * Owners whose last name starts with the typed text, offered as suggestions in the
+	 * find-owners form.
+	 */
+	@GetMapping("/owners/suggestions")
+	@ResponseBody
+	public List<OwnerSuggestion> suggestOwners(@RequestParam(name = "lastName", defaultValue = "") String lastName) {
+		return this.owners.findByLastNameStartingWith(lastName)
+			.stream()
+			.limit(MAX_SUGGESTIONS)
+			.map(OwnerSuggestion::of)
+			.toList();
+	}
+
+	record OwnerSuggestion(int id, String firstName, String lastName, String city) {
+
+		static OwnerSuggestion of(Owner owner) {
+			return new OwnerSuggestion(owner.getId(), owner.getFirstName(), owner.getLastName(), owner.getCity());
+		}
+
 	}
 
 	@GetMapping("/owners/{ownerId}/edit")

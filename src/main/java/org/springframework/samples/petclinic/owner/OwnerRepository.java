@@ -18,6 +18,8 @@ package org.springframework.samples.petclinic.owner;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -43,7 +45,25 @@ public interface OwnerRepository extends JpaRepository<Owner, Integer> {
 	 * @return a Collection of matching {@link Owner}s (or an empty Collection if none
 	 * found)
 	 */
+	@Cacheable(cacheNames = "owners", key = "#lastName")
 	Page<Owner> findByLastNameStartingWith(String lastName, Pageable pageable);
+
+	/**
+	 * Retrieve all {@link Owner}s whose last name <i>starts</i> with the given text, for
+	 * the suggestions offered while typing in the find-owners form.
+	 * @param lastName Value to search for
+	 * @return a List of matching {@link Owner}s (or an empty List if none found)
+	 */
+	@Cacheable(cacheNames = "owners", key = "#lastName")
+	List<Owner> findByLastNameStartingWith(String lastName);
+
+	/**
+	 * Save an {@link Owner}, clearing cached owner searches so the change is visible to
+	 * the next search.
+	 */
+	@Override
+	@CacheEvict(cacheNames = "owners", allEntries = true)
+	<S extends Owner> S save(S owner);
 
 	/**
 	 * Retrieve an {@link Owner} from the data store by id.

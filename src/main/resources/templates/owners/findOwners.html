@@ -11,7 +11,9 @@
       <div class="control-group" id="lastNameGroup">
         <label class="col-sm-2 control-label" th:text="#{lastName}">Last name </label>
         <div class="col-sm-10">
-          <input class="form-control" th:field="*{lastName}" size="30" maxlength="80" />
+          <input class="form-control" th:field="*{lastName}" size="30" maxlength="80" list="owner-suggestions"
+            autocomplete="off" th:data-suggestions-url="@{/owners/suggestions}" />
+          <datalist id="owner-suggestions"></datalist>
           <span class="help-inline">
             <div th:if="${#fields.hasAnyErrors()}">
               <p th:each="err : ${#fields.allErrors()}" th:text="${err}">Error</p>
@@ -29,6 +31,31 @@
     <a class="btn btn-primary" th:href="@{/owners/new}" th:text="#{addOwner}">Add Owner</a>
 
   </form>
+
+  <script>
+    (function () {
+      const input = document.getElementById('lastName');
+      const suggestions = document.getElementById('owner-suggestions');
+      let timer;
+      input.addEventListener('input', function () {
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+          const url = input.dataset.suggestionsUrl + '?lastName=' + encodeURIComponent(input.value);
+          fetch(url, { headers: { Accept: 'application/json' } })
+            .then(function (response) { return response.ok ? response.json() : []; })
+            .then(function (owners) {
+              suggestions.replaceChildren(...owners.map(function (owner) {
+                const option = document.createElement('option');
+                option.value = owner.lastName;
+                option.label = owner.firstName + ' ' + owner.lastName + ', ' + owner.city;
+                return option;
+              }));
+            })
+            .catch(function () { suggestions.replaceChildren(); });
+        }, 200);
+      });
+    })();
+  </script>
 
 </body>
 

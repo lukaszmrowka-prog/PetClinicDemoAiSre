@@ -112,6 +112,17 @@ class OwnerControllerTests {
 	}
 
 	@Test
+	void testSuggestOwners() throws Exception {
+		given(this.owners.findByLastNameStartingWith("Fr")).willReturn(List.of(george()));
+
+		mockMvc.perform(get("/owners/suggestions").param("lastName", "Fr"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$[0].id").value(TEST_OWNER_ID))
+			.andExpect(jsonPath("$[0].lastName").value("Franklin"))
+			.andExpect(jsonPath("$[0].city").value("Madison"));
+	}
+
+	@Test
 	void testInitCreationForm() throws Exception {
 		mockMvc.perform(get("/owners/new"))
 			.andExpect(status().isOk())
